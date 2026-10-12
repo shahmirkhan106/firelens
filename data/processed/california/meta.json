@@ -1,0 +1,9 @@
+{
+  "aoi": "california",
+  "metric": "unique_cells_harmonized",
+  "resolution_h3": 8,
+  "products": [
+    "MODIS_SP",
+    "VIIRS_SNPP_SP"
+  ]
+}

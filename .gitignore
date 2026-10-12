@@ -1,0 +1,23 @@
+# Secrets — never commit
+.env
+.env.*
+*.key
+firms_map_key*
+
+# Download / server logs embed full FIRMS API URLs (they contain the MAP_KEY)
+logs/
+
+# Large generated intermediates (regenerate with scripts/build_pipeline.py).
+# data/processed/ holds the published artifacts and IS committed.
+data/raw/
+data/daily/
+
+# Video build intermediates (regenerate with scripts/build_video.py)
+docs/video/_work/
+
+# Python / Node
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+frontend/dist/
