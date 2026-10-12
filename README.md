@@ -290,6 +290,7 @@ firelens/
 ├── docs/
 │   ├── DECK.md                submission slide deck
 │   ├── VIDEO_SCRIPT.md        demo narration + shot list
+│   ├── SUBMISSION.md          submission-ready project text
 │   ├── firelens_demo.mp4      silent screencast
 │   └── shots/                 captured UI screenshots (region × tab)
 └── logs/
