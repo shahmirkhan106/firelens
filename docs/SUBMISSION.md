@@ -86,6 +86,17 @@ start/peak/end), and **Unusual weeks** (robust anomalies).
 - Azwar Khan
 - Sajid Islam
 
+## Use of Artificial Intelligence (required disclosure)
+
+This project was developed with AI assistance:
+
+- **Code generation & debugging**: GitHub Copilot / Claude (Anthropic) used for writing Python pipeline code, FastAPI endpoints, React components, test suite, and build scripts.
+- **Documentation**: README, deck, video script, and submission text drafted with AI assistance, then reviewed and edited by the team.
+- **No AI-generated images or video**: All screenshots, charts, and the demo video are captured from the running application (real code output). The video was assembled programmatically via `scripts/build_video.py` using real screenshots.
+- **No AI-generated data**: All fire data comes directly from NASA FIRMS (MODIS C6.1, VIIRS S-NPP); the pipeline is deterministic and fully reproducible.
+
+The team reviewed, tested, and takes full responsibility for all submitted code and outputs.
+
 ## Links
 
 - **Code:** https://github.com/shahmirkhan106/firelens
