@@ -3,7 +3,14 @@ import { Figure, fmt, weekLabel } from "./Explainer";
 
 const TICKS = [1, 9, 18, 27, 36, 44, 52];
 
-export default function PeakSeasonChart({ data }) {
+const COLORS = {
+  band: "#d9822b",
+  median: "#e4572e",
+  grid: "#252d3d",
+  text: "#7d8ba1",
+};
+
+export default function PeakSeasonChart({ data, aoi }) {
   const rows = (Array.isArray(data) ? data : []).filter(
     (r) => r && r.start_week != null && r.peak_week != null && r.end_week != null
   );
@@ -43,6 +50,8 @@ export default function PeakSeasonChart({ data }) {
   const late = rows.slice(-5).reduce((a, r) => a + r.peak_week, 0) / Math.min(5, n);
   const shift = late - early;
 
+  const downloadUrl = `/api/aoi/${aoi}/timeseries?sensor=harmonized&format=csv`;
+
   const trendText =
     Math.abs(totalShift) <= slopeErr
       ? "no clear trend in peak timing"
@@ -54,6 +63,7 @@ export default function PeakSeasonChart({ data }) {
     <Figure
       title="Fire season timing and length, year by year"
       subtitle="Bar spans season start → end; the dot marks the busiest week"
+      download={{ url: downloadUrl, filename: "peak_season.csv" }}
       explain={
         <>
           <p>
@@ -96,15 +106,15 @@ export default function PeakSeasonChart({ data }) {
       <svg viewBox={`0 0 ${w} ${h}`} className="main-svg">
         {TICKS.map((wk) => (
           <g key={wk}>
-            <line x1={P.l} x2={w - P.r} y1={y(wk)} y2={y(wk)} stroke="#252d3d" />
-            <text x={P.l - 8} y={y(wk) + 4} textAnchor="end" fontSize="10" fill="#7d8ba1">
+            <line x1={P.l} x2={w - P.r} y1={y(wk)} y2={y(wk)} stroke={COLORS.grid} />
+            <text x={P.l - 8} y={y(wk) + 4} textAnchor="end" fontSize="10" fill={COLORS.text}>
               {weekLabel(wk).replace(" ", "\u00a0")}
             </text>
           </g>
         ))}
         {years.map((yr, i) =>
           i % step === 0 || i === n - 1 ? (
-            <text key={yr} x={x(yr)} y={h - 16} fontSize="10" textAnchor="middle" fill="#7d8ba1">
+            <text key={yr} x={x(yr)} y={h - 16} fontSize="10" textAnchor="middle" fill={COLORS.text}>
               {yr}
             </text>
           ) : null
@@ -117,12 +127,12 @@ export default function PeakSeasonChart({ data }) {
               x2={x(r.year)}
               y1={y(r.start_week)}
               y2={y(r.end_week)}
-              stroke="#d9822b"
+              stroke={COLORS.band}
               strokeWidth="6"
               strokeLinecap="round"
               opacity="0.65"
             />
-            <circle cx={x(r.year)} cy={y(r.peak_week)} r="4.5" fill="#e4572e">
+            <circle cx={x(r.year)} cy={y(r.peak_week)} r="4.5" fill={COLORS.median}>
               <title>{`${r.year}: ${weekLabel(r.start_week)} → ${weekLabel(r.end_week)}, peak ${weekLabel(r.peak_week)}, ${fmt(r.annual_total)} cell-days total over ${r.days ?? "?"} observed days`}</title>
             </circle>
           </g>

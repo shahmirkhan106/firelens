@@ -9,7 +9,7 @@ function severity(a) {
   return { label: "mild", cls: "s0" };
 }
 
-export default function AnomalyList({ data }) {
+export default function AnomalyList({ data, aoi }) {
   const [sign, setSign] = useState("hot");
   const rows = (Array.isArray(data) ? data : []).filter(
     (r) => r && r.anomaly != null && Number.isFinite(r.anomaly)
@@ -23,10 +23,13 @@ export default function AnomalyList({ data }) {
   const peakAbs = Math.max(...rows.map((r) => Math.abs(r.anomaly)), 1);
   const extreme = rows.filter((r) => Math.abs(r.anomaly) >= 2).length;
 
+  const downloadUrl = `/api/aoi/${aoi}/timeseries?sensor=harmonized&format=csv`;
+
   return (
     <Figure
       title="Unusual weeks vs the region's own history"
       subtitle="Each week compared against the typical activity for that same week"
+      download={{ url: downloadUrl, filename: "anomalies.csv" }}
       explain={
         <>
           <p>

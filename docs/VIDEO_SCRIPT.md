@@ -24,10 +24,11 @@ is the **narration + shot list** to record against it.
 | 3 | `california_climatology` | 9 s | The typical season | "One view shows the typical season: the weekly median, wrapped in a tenth-to-ninetieth percentile band. A narrow band means a predictable season; a wide one means volatility." |
 | 4 | `california_season` | 9 s | When the season starts and peaks | "Another tracks when each year's season starts, peaks, and ends — computed from the cumulative curve — so a shift in fire timing is visible directly." |
 | 5 | `california_anomalies` | 9 s | Unusual weeks vs history | "Unusual weeks are ranked in units of the local spread — a robust stand-in for standard deviation that a single extreme week can't fool." |
+| 5.5 | `california_anomalies` | 5 s | **Map-based AOI picker + CSV export** | "Emergency managers can now draw any region on the map, pick a preset, and download CSV of harmonized hotspots — ready for their own tools. Colorblind-safe palettes make it accessible." |
 | 6 | `amazon_calendar` | 8 s | Amazon Basin — equatorial, year-round fire | "The same method runs on five regions across five fire regimes. The Amazon burns year-round." |
 | 7 | `australia-nsw_calendar` | 8 s | Australia NSW — temperate, Dec–Feb peak | "New South Wales peaks in the southern-hemisphere summer." |
 | 8 | `east-siberia_calendar` | 8 s | East Siberia — boreal, short intense summer | "And East Siberia has a short, intense boreal summer." |
-| 9 | End card | 6 s | team scikit · NASA FIRMS | "FireLens: twenty-eight million raw detections, harmonized into one record you can trust — where a change you see is real fire, not a change of instrument. Team scikit." |
+| 9.5 | End card | 6 s | team scikit · NASA FIRMS | "FireLens: twenty-eight million raw detections, harmonized into one record you can trust — interactive map, CSV export, accessible colors — where a change you see is real fire, not a change of instrument. Team scikit." |
 
 Word count: **~212 words** → at a measured pace this fills the 78.8 s cut.
 

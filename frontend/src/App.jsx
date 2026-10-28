@@ -6,6 +6,7 @@ import PeakSeasonChart from "./PeakSeasonChart";
 import AnomalyList from "./AnomalyList";
 import ErrorBoundary from "./ErrorBoundary";
 import { Info } from "./Explainer";
+import MapAoiPicker from "./components/MapAoiPicker";
 import "./styles.css";
 
 const API = import.meta.env.VITE_API_URL || "/api";
@@ -114,6 +115,7 @@ export default function App() {
             </button>
           ))}
         </div>
+        <MapAoiPicker selectedAoi={aoi} onAoiSelect={setAoi} />
       </section>
 
       <nav className="tabs">
@@ -139,7 +141,7 @@ export default function App() {
 
         {view.data && tab === "compare" && comparisonTs.data && (
           <ErrorBoundary resetKey={`${aoi}-${tab}`}>
-            <SensorComparison comparison={comparisonTs.data} summary={view.data} />
+            <SensorComparison comparison={comparisonTs.data} summary={view.data} aoi={aoi} />
           </ErrorBoundary>
         )}
         {view.data && tab === "calendar" && (
@@ -149,17 +151,17 @@ export default function App() {
         )}
         {view.data && tab === "climatology" && (
           <ErrorBoundary resetKey={`${aoi}-${tab}`}>
-            <ClimatologyChart data={view.data} />
+            <ClimatologyChart data={view.data} aoi={aoi} />
           </ErrorBoundary>
         )}
         {view.data && tab === "season" && (
           <ErrorBoundary resetKey={`${aoi}-${tab}`}>
-            <PeakSeasonChart data={view.data} />
+            <PeakSeasonChart data={view.data} aoi={aoi} />
           </ErrorBoundary>
         )}
         {view.data && tab === "anomalies" && (
           <ErrorBoundary resetKey={`${aoi}-${tab}`}>
-            <AnomalyList data={view.data} />
+            <AnomalyList data={view.data} aoi={aoi} />
           </ErrorBoundary>
         )}
       </main>

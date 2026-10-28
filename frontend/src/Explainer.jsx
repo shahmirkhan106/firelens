@@ -18,12 +18,22 @@ export function Info({ title, children, defaultOpen = false }) {
   );
 }
 
-export function Figure({ title, subtitle, explain, legend, children, note }) {
+export function Figure({ title, subtitle, explain, legend, children, note, download }) {
   return (
     <figure className="fig">
       <figcaption>
         <h3>{title}</h3>
         {subtitle && <p className="fig-sub">{subtitle}</p>}
+        {download && (
+          <a
+            className="fig-download"
+            href={download.url}
+            download={download.filename}
+            title={download.title || "Download CSV"}
+          >
+            ⬇ CSV
+          </a>
+        )}
       </figcaption>
       {explain && <Info title="What am I looking at?">{explain}</Info>}
       {legend}

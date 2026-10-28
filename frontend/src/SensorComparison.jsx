@@ -21,7 +21,7 @@ function monthAgg(dates, values) {
   return [...buckets.entries()].map(([m, v]) => [m, v.reduce((a, b) => a + b, 0) / v.length]);
 }
 
-export default function SensorComparison({ comparison, summary }) {
+export default function SensorComparison({ comparison, summary, aoi }) {
   const [hover, setHover] = useState(null);
   const [hidden, setHidden] = useState(() => new Set());
   const W = 860, H = 320, P = { l: 52, r: 16, t: 18, b: 34 };
@@ -85,6 +85,8 @@ export default function SensorComparison({ comparison, summary }) {
     summary?.gap_years && typeof summary.gap_years === "object"
       ? Object.entries(summary.gap_years).sort(([a], [b]) => a - b)
       : [];
+
+  const downloadUrl = `/api/aoi/${aoi}/timeseries?sensor=harmonized&format=csv`;
 
   const hv = hover != null && series.keys[hover] ? series.keys[hover] : null;
   const at = (name) => (hv ? series[name][hover][1] : null);
@@ -157,6 +159,7 @@ export default function SensorComparison({ comparison, summary }) {
       <Figure
         title="The sensor problem, and its removal"
         subtitle="Monthly mean daily fire cells — each satellite on its own, then FireLens's harmonized result"
+        download={{ url: downloadUrl, filename: "sensor_comparison.csv" }}
         explain={
           <>
             <p>

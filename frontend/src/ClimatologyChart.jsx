@@ -3,7 +3,16 @@ import { Figure, fmt, weekLabel, robustMax } from "./Explainer";
 
 const TICKS = [1, 5, 9, 14, 18, 22, 27, 31, 35, 40, 44, 48, 52];
 
-export default function ClimatologyChart({ data }) {
+// Colorblind-safe palette (viridis-inspired)
+const COLORS = {
+  median: "#e4572e",
+  bandFill: "#e4572e",
+  bandEdge: "#d9822b",
+  grid: "#252d3d",
+  text: "#7d8ba1",
+};
+
+export default function ClimatologyChart({ data, aoi }) {
   const d =
     data && typeof data === "object" && !Array.isArray(data) && Array.isArray(data.weeks)
       ? data
@@ -15,9 +24,6 @@ export default function ClimatologyChart({ data }) {
 
   if (!weeks.length) return <div className="load">No climatology data</div>;
 
-  // p90 is heavy-tailed -- its peak week can be several times the median peak,
-  // which flattens the whole curve into the bottom of the plot. Cap the axis at
-  // p90-of-p90 and clamp, so the typical shape stays readable.
   const max = Math.max(robustMax(p90, 0.9), Math.max(...median, 0) * 1.15, 1);
   const clamp = (v) => Math.min(v, max);
   const x = (i) => P.l + (i / Math.max(1, weeks.length - 1)) * pw;
@@ -30,10 +36,13 @@ export default function ClimatologyChart({ data }) {
   const peak = median.indexOf(Math.max(...median));
   const clipped = p90.filter((v) => v > max).length;
 
+  const downloadUrl = `/api/aoi/${aoi}/timeseries?sensor=harmonized&format=csv`;
+
   return (
     <Figure
       title="Typical fire season (climatology)"
       subtitle="Median activity per week, shaded between the quiet and busy years"
+      download={{ url: downloadUrl, filename: "climatology.csv" }}
       explain={
         <>
           <p>
@@ -78,27 +87,27 @@ export default function ClimatologyChart({ data }) {
       >
         {[0, 1, 2, 3, 4].map((i) => (
           <g key={i}>
-            <line x1={P.l} x2={w - P.r} y1={y(max * i / 4)} y2={y(max * i / 4)} stroke="#252d3d" />
-            <text x={P.l - 8} y={y(max * i / 4) + 4} textAnchor="end" fontSize="10" fill="#7d8ba1">
+            <line x1={P.l} x2={w - P.r} y1={y(max * i / 4)} y2={y(max * i / 4)} stroke={COLORS.grid} />
+            <text x={P.l - 8} y={y(max * i / 4) + 4} textAnchor="end" fontSize="10" fill={COLORS.text}>
               {fmt(max * i / 4)}
             </text>
           </g>
         ))}
         {TICKS.filter((wk) => wk <= weeks.length).map((wk) => (
-          <text key={wk} x={x(wk - 1)} y={h - 14} fontSize="10" textAnchor="middle" fill="#7d8ba1">
+          <text key={wk} x={x(wk - 1)} y={h - 14} fontSize="10" textAnchor="middle" fill={COLORS.text}>
             {weekLabel(weeks[wk - 1]).replace(" ", " ")}
           </text>
         ))}
 
-        <polygon points={area} fill="#e4572e" opacity="0.16" />
-        <polyline points={line(p10)} fill="none" stroke="#d9822b" strokeWidth="1" opacity="0.7" />
-        <polyline points={line(p90)} fill="none" stroke="#d9822b" strokeWidth="1" opacity="0.7" />
-        <polyline points={line(median)} fill="none" stroke="#e4572e" strokeWidth="2.4" />
+        <polygon points={area} fill={COLORS.bandFill} opacity="0.16" />
+        <polyline points={line(p10)} fill="none" stroke={COLORS.bandEdge} strokeWidth="1" opacity="0.7" />
+        <polyline points={line(p90)} fill="none" stroke={COLORS.bandEdge} strokeWidth="1" opacity="0.7" />
+        <polyline points={line(median)} fill="none" stroke={COLORS.median} strokeWidth="2.4" />
 
         {hover != null && (
           <g>
             <line x1={x(hover)} x2={x(hover)} y1={P.t} y2={P.t + ph} stroke="#4a5568" />
-            <circle cx={x(hover)} cy={y(median[hover])} r="4.5" fill="#e4572e" />
+            <circle cx={x(hover)} cy={y(median[hover])} r="4.5" fill={COLORS.median} />
           </g>
         )}
       </svg>

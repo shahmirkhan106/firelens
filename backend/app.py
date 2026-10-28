@@ -132,19 +132,33 @@ def _peak_cached(aoi: str, _stamp_key: float) -> list:
     return df.reset_index(drop=True).to_dict(orient="records")
 
 
+from fastapi.responses import StreamingResponse
+import io
+
+
 @app.get("/aoi/{aoi}/timeseries")
-def timeseries(aoi: str, sensor: str = "harmonized"):
-    return _timeseries_cached(aoi, sensor, _aoi_stamp(aoi))
+def timeseries(aoi: str, sensor: str = "harmonized", format: str = "json"):
+    return _timeseries_cached(aoi, sensor, format, _aoi_stamp(aoi))
 
 
 @lru_cache(maxsize=32)
-def _timeseries_cached(aoi: str, sensor: str, _stamp_key: float) -> dict:
+def _timeseries_cached(aoi: str, sensor: str, format: str, _stamp_key: float):
     df = _load(aoi, "merged.parquet")
     df["acq_date"] = pd.to_datetime(df["acq_date"])
     col = "unique_cells_harmonized" if sensor == "harmonized" else "unique_cells_naive"
     out = df[["acq_date", col]].copy()
     out.columns = ["date", "value"]
     out = out.dropna(subset=["value"])
+    out = out.sort_values("date")
+    if format == "csv":
+        buf = io.StringIO()
+        out.to_csv(buf, index=False)
+        buf.seek(0)
+        return StreamingResponse(
+            io.BytesIO(buf.getvalue().encode()),
+            media_type="text/csv",
+            headers={"Content-Disposition": f'attachment; filename="{aoi}_{sensor}_timeseries.csv"'}
+        )
     return {"dates": out["date"].dt.strftime("%Y-%m-%d").tolist(),
             "values": out["value"].round(1).tolist()}
 
@@ -331,8 +345,8 @@ def warm_aoi(aoi: str) -> None:
     _calendar_cached(aoi, st)
     _climatology_cached(aoi, st)
     _peak_cached(aoi, st)
-    _timeseries_cached(aoi, "harmonized", st)
-    _timeseries_cached(aoi, "raw", st)
+    _timeseries_cached(aoi, "harmonized", "json", st)
+    _timeseries_cached(aoi, "raw", "json", st)
     _comparison_cached(aoi, st)
     _anomalies_cached(aoi, st)
     _summary_cached(aoi, st)

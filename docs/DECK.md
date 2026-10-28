@@ -1,13 +1,14 @@
 ---
 title: FireLens
-subtitle: One continuous fire record from two satellites
+subtitle: A harmonized burning-activity calendar for emergency managers
 author: team scikit
 ---
 
 # FireLens
 
-**One continuous fire record from two different satellites — a burning-activity
-calendar you can trust across the 2012 sensor change.**
+**A harmonized burning-activity calendar for emergency managers — one continuous
+fire record from two different satellites, enabling early warning and response
+across the 2012 sensor change.**
 
 NASA Space Apps Challenge 2026 · *Harmonization of MODIS and VIIRS Hot Spots*
 
@@ -21,10 +22,10 @@ a change of instrument."
 
 ---
 
-## The problem
+## The problem — fire managers need one consistent calendar
 
-NASA FIRMS publishes active-fire hotspots from **two satellites at very different
-resolutions**:
+NASA FIRMS publishes active-fire hotspots from two satellites at very different
+resolutions:
 
 | Sensor | Resolution | Overpasses/day | Archive |
 |---|---|---|---|
@@ -33,6 +34,11 @@ resolutions**:
 
 Both observe *the same fires* — but VIIRS reports **2.2×–4.9×** as many distinct
 fire cells as MODIS, purely because its pixels are finer.
+
+Emergency managers need to **compare a current fire against historical patterns**,
+recognize changes relative to the multi-year median, and strengthen forecasting.
+But the two sensors cannot be compared directly — their records are split across
+instruments whose data cannot be harmonized without a consistent method.
 
 <!-- notes:
 Stress: this is a measurement artifact, not a real change on the ground. A 375 m
@@ -61,16 +67,22 @@ more") into a number we can calibrate against.
 
 ---
 
-## What FireLens does
+## What FireLens does — for emergency managers
 
 1. **Downloads** 26 yrs MODIS + 15 yrs VIIRS for five regions (26.2M detections)
 2. **Cleans** — confidence thresholds, drop volcano/offshore, drop FRP ≤ 0
 3. **Grids** every detection onto a common **~1 km H3** lattice (kills pixel-size inflation)
 4. **Calibrates** VIIRS onto the MODIS scale using the 2012→present overlap
-5. **Publishes** the result as an interactive burning-activity calendar
+5. **Publishes** the result as an interactive **burning-activity calendar**
 
 Output: **one defensible activity series, 2001 → today**, where year-over-year
 change reflects **real fire**, not a change of satellite.
+
+**Emergency managers can now:**
+- Select a region and date range → download analytics & visualizations
+- See which months/years had the highest fire activity
+- Compare current burning against the historical median
+- Export CSV of harmonized hotspots for their own tools
 
 ---
 
@@ -125,7 +137,7 @@ proactively on the next slide.
 
 ## The web app — five views
 
-Every view has a **"What am I looking at?"** explainer and hover/click readouts.
+Every view has a **"What am I looking at?"** explainer, hover/click readouts, and **CSV export**:
 
 1. **Why harmonize** — MODIS, VIIRS and the harmonized series on one axis; watch
    them disagree across 14 yrs of overlap and the correction bring them together.
@@ -134,6 +146,11 @@ Every view has a **"What am I looking at?"** explainer and hover/click readouts.
 4. **Season timing** — per-year start/peak/end bars + a computed drift trend.
 5. **Unusual weeks** — weeks ranked by robust p10–p90 anomaly (a substitute for σ
    that a single extreme week cannot fool).
+
+**New interactive features for emergency managers:**
+- **Map-based AOI selection** — draw a rectangle/polygon or click a preset region
+- **CSV download** on every view → plug directly into your own tools
+- **Colorblind-safe palettes** (viridis) for accessible visualizations
 
 ![The 2012 sensor break, raw vs harmonized](shots/california_compare.png)
 
@@ -188,7 +205,7 @@ told you where our method is weak.
   VIIRS-calibrated share of post-2012 cell-days is **0.01%–0.9%** — the correction
   fixes *dates*, not the magnitude of the record.
 - **Per-region linear fit** — simple and inspectable; nonlinear fit for crop burning.
-- **No map view** — a natural next feature.
+- **Map-based AOI selection added** — custom areas use nearest preset's data.
 - **Cloud-edge artifacts** not modelled — partly absorbed by the overlap average.
 
 ---

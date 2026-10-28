@@ -1,6 +1,6 @@
 # FireLens
 
-**One continuous fire record from two different satellites — a burning-activity calendar you can trust across the 2012 sensor change.**
+**A harmonized burning-activity calendar for emergency managers — one continuous fire record from two different satellites, enabling early warning and response across the 2012 sensor change.**
 
 NASA Space Apps Challenge 2026 · *Harmonization of MODIS and VIIRS Hot Spots*
 

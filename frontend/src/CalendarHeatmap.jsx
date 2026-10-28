@@ -3,8 +3,8 @@ import { Figure, fmt, robustMax } from "./Explainer";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// Single-hue sequential ramp (light -> hot). Readable in greyscale too.
-const RAMP = ["#fff5f0", "#fee0d2", "#fcbba1", "#fc9272", "#fb6a4a", "#ef3b2c", "#a50f15"];
+// Colorblind-safe sequential ramp (viridis-like). Perceptually uniform, works in greyscale.
+const RAMP = ["#fde725", "#b8de29", "#7ad151", "#22a884", "#2a788e", "#414487", "#440154"];
 
 // Fraction of the scale a square must reach to count as "hot". The scale is
 // capped at p95 (see robustMax), so anything at or above this reads as the
@@ -87,12 +87,16 @@ export default function CalendarHeatmap({ data }) {
     .sort((a, b) => b.rate - a.rate)[0];
   const hottest = grid.flat().reduce((a, b) => (Number.isFinite(b) && b > a ? b : a), 0);
 
+  const API = import.meta.env.VITE_API_URL || "/api";
+const downloadUrl = `${API}/aoi/${years[0] ? years[0] : ""}/timeseries?sensor=harmonized&format=csv`;
+
   return (
     <Figure
       title="Burning activity calendar"
       subtitle={`${years[0]}–${years[years.length - 1]} · one row per year, one square per day${
         partial_last_year ? ` · ${years[years.length - 1]} is still in progress (record ends ${last_observed_date})` : ""
       }`}
+      download={{ url: downloadUrl, filename: "burning_activity_calendar.csv" }}
       explain={
         <>
           <p>
