@@ -10,7 +10,7 @@ team **scikit** — M. Shahmir Khan · Ahmed Bilal · Abbas Bajwa · Azwar Khan 
 
 ## Demo
 
-A 30-second demo video is at **[`docs/firelens_demo.mp4`](docs/firelens_demo.mp4)**, with the narration script and shot list in [`docs/VIDEO_SCRIPT.md`](docs/VIDEO_SCRIPT.md), a 7-slide demo deck in [`docs/DEMO_DECK.md`](docs/DEMO_DECK.md), and the full narrative deck in [`docs/DECK.md`](docs/DECK.md).
+A 30-second demo video is on **[YouTube](https://youtu.be/RYlbIDoLuQQ)** (source file: [`docs/firelens_demo.mp4`](docs/firelens_demo.mp4)), with the narration script and shot list in [`docs/VIDEO_SCRIPT.md`](docs/VIDEO_SCRIPT.md), a 7-slide demo deck in [`docs/DEMO_DECK.md`](docs/DEMO_DECK.md), and the full narrative deck in [`docs/DECK.md`](docs/DECK.md).
 
 ![The 2012 sensor break, raw vs harmonized](docs/shots/california_compare.png)
 

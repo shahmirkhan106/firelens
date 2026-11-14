@@ -1,5 +1,7 @@
 # FireLens — 30-second demo video script
 
+Hosted: https://youtu.be/RYlbIDoLuQQ
+
 Submission-compliant cut: **28 seconds**, silent with on-screen captions (the
 30-second limit applies to the project demo video). Narration is optional and is
 provided below if a voiceover is added.

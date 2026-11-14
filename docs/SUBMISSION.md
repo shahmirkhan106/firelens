@@ -104,7 +104,7 @@ The team reviewed, tested, and takes full responsibility for all submitted code 
 ## Links
 
 - **Final project / code:** https://github.com/shahmirkhan106/firelens
-- **30-second demo video:** `docs/firelens_demo.mp4` — upload to YouTube (Unlisted) and paste the URL here. **YouTube URL: TBD**
+- **30-second demo video:** https://youtu.be/RYlbIDoLuQQ (source file: `docs/firelens_demo.mp4`)
 - **7-slide demo deck:** `docs/DEMO_DECK.md`
 - **Full narrative deck:** `docs/DECK.md`
 
