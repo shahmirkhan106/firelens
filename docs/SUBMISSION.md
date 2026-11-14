@@ -161,7 +161,7 @@ and outputs.
 
 ## Links
 
-- **Project Demo (hosted video):** https://youtu.be/RYlbIDoLuQQ (28 seconds)
+- **Project Demo (hosted video):** https://youtu.be/Iy_iHQV19bk (28 seconds)
 - **Final Project (code):** https://github.com/shahmirkhan106/firelens
 - **7-slide demo deck:**
   https://github.com/shahmirkhan106/firelens/blob/main/docs/DEMO_DECK.md

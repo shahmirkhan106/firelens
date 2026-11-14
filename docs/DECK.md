@@ -234,7 +234,7 @@ Full source rebuild only (needs `data/raw/` from README step 1):
 
 - **Data:** NASA FIRMS — MODIS C6.1 (1 km) + VIIRS S-NPP (375 m), snapshot → 30 June 2026
 - **Code:** https://github.com/shahmirkhan106/firelens
-- **Demo video (28s, hosted):** https://youtu.be/RYlbIDoLuQQ
+- **Demo video (28s, hosted):** https://youtu.be/Iy_iHQV19bk
 - **License:** MIT
 - **References:** NASA FIRMS API · MODIS MOD14 · VIIRS VNP14IMG · Uber H3 ·
   Leaflet/OpenStreetMap · React/Vite · FastAPI

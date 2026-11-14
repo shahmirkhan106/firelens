@@ -107,7 +107,7 @@ Full source rebuild only (needs `data/raw/` from README step 1):
 `scripts/build_all.sh`
 
 - **Code:** https://github.com/shahmirkhan106/firelens
-- **Demo video (28s, hosted):** https://youtu.be/RYlbIDoLuQQ
+- **Demo video (28s, hosted):** https://youtu.be/Iy_iHQV19bk
 - **Full deck:** https://github.com/shahmirkhan106/firelens/blob/main/docs/DECK.md
 - **Data:** NASA FIRMS MODIS C6.1 + VIIRS S-NPP · **License:** MIT
 - **References:** NASA FIRMS API · MODIS MOD14 · VIIRS VNP14IMG · Uber H3 ·
