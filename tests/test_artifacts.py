@@ -21,7 +21,7 @@ def test_every_aoi_has_full_artifact_set():
         assert d.is_dir(), f"missing {aoi}"
         for name in ("calendar_grid.csv", "peak_season.csv", "climatology.csv",
                      "anomalies.csv", "calibration.csv", "merged.parquet",
-                     "meta.json"):
+                     "meta.json", "overlap.json", "validation.json"):
             assert (d / name).exists(), f"{aoi}: missing {name}"
 
 
@@ -83,3 +83,15 @@ def test_calibration_sane():
         c = pd.read_csv(PROC / aoi / "calibration.csv")
         assert {"slope", "r2"} <= set(c.columns), aoi
         assert (c["slope"] > 0).all(), aoi
+
+def test_overlap_and_validation_sidecars_are_consistent():
+    import json
+    for aoi in AOIS:
+        d = PROC / aoi
+        overlap = json.loads((d / "overlap.json").read_text())
+        validation = json.loads((d / "validation.json").read_text())
+        assert overlap["cell_inflation"] > 1, aoi
+        assert overlap["days"] > 3000, aoi
+        assert validation["loyo"]["folds"] >= 10, aoi
+        assert 0 < validation["loyo"]["r2_median"] <= 1, aoi
+        assert "forward" in validation, aoi

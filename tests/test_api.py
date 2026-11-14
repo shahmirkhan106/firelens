@@ -5,13 +5,17 @@ Every success shape the frontend depends on is pinned here so a schema drift
 `pytest tests/test_api.py` from the repo root.
 """
 import math
+import shutil
+from pathlib import Path
 
 import starlette.testclient
 
+import backend.app as appmod
 from backend.app import app as fastapi_app
 
 client = starlette.testclient.TestClient(fastapi_app)
 AOIS = ["california", "north-india", "amazon", "australia-nsw", "east-siberia"]
+PROC = Path(__file__).resolve().parent.parent / "data" / "processed"
 
 
 def test_summary_shape_for_every_aoi():
@@ -20,12 +24,19 @@ def test_summary_shape_for_every_aoi():
         assert r.status_code == 200, aoi
         j = r.json()
         for k in ("years", "days", "cell_days", "full_years", "gap_years",
-                  "typical_days_per_year", "seasons", "calibration", "overlap"):
+                  "typical_days_per_year", "seasons", "calibration", "overlap",
+                  "validation"):
             assert k in j, (aoi, k)
         # gap detection must not need re-downloads post-repair
         assert not j["gap_years"], (aoi, j["gap_years"])
         assert j["full_years"] >= 25, aoi
         assert j["days"] > 3000, (aoi, j["days"])
+        # These two files are committed so a fresh clone (no data/daily) can
+        # still render the diagnostic cards.
+        assert j["overlap"]["cell_inflation"] > 1, (aoi, j["overlap"])
+        assert j["overlap"]["days"] > 3000, (aoi, j["overlap"])
+        assert j["validation"]["loyo"]["folds"] >= 10, (aoi, j["validation"])
+        assert j["validation"]["loyo"]["r2_median"] > 0.5, (aoi, j["validation"])
 
 
 def test_timeseries_aligned():
@@ -117,3 +128,30 @@ def test_view_specific_csv_exports():
             first = r.text.splitlines()[0]
             assert first.startswith(header.split(",")[0]), (name, first)
     assert client.get("/aoi/california/export/nope").status_code == 404
+
+
+def test_overlap_survives_missing_daily_cache(tmp_path, monkeypatch):
+    """A fresh clone has no data/daily; overlap.json must carry the cards."""
+    monkeypatch.setattr(appmod, "DAILY", tmp_path / "missing-daily")
+    appmod._overlap_facts.cache_clear()
+    appmod._summary_cached.cache_clear()
+    for aoi in AOIS:
+        j = client.get(f"/aoi/{aoi}/summary").json()
+        assert j["overlap"]["cell_inflation"] > 1, (aoi, j["overlap"])
+        assert j["overlap"]["days"] > 3000, (aoi, j["overlap"])
+
+
+def test_overlap_and_validation_fallback_from_merged(tmp_path, monkeypatch):
+    """Older artifacts without the JSON sidecars still work from merged.parquet."""
+    aoi = "california"
+    shutil.copy(PROC / aoi / "merged.parquet", tmp_path / "merged.parquet")
+    monkeypatch.setattr(appmod, "_aoi_dir", lambda _aoi: tmp_path)
+    monkeypatch.setattr(appmod, "DAILY", tmp_path / "missing-daily")
+    appmod._overlap_facts.cache_clear()
+    appmod._validation_facts.cache_clear()
+    appmod._load_cached.cache_clear()
+    overlap = appmod._overlap_facts(aoi, 0.0)
+    validation = appmod._validation_facts(aoi, 0.0)
+    assert overlap["cell_inflation"] > 1
+    assert overlap["source"] == "merged.parquet"
+    assert validation["loyo"]["r2_median"] > 0.5

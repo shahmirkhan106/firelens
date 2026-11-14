@@ -5,5 +5,11 @@
   "products": [
     "MODIS_SP",
     "VIIRS_SNPP_SP"
-  ]
+  ],
+  "snapshot_start": "2001-01-01",
+  "snapshot_end": "2026-06-30",
+  "harmonized_days": 9132,
+  "cell_days": 3362696,
+  "source": "NASA FIRMS MODIS_SP + VIIRS_SNPP_SP",
+  "generated_by": "scripts/build_pipeline.py"
 }

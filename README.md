@@ -1,16 +1,18 @@
 # FireLens
 
-**A harmonized burning-activity calendar for emergency managers — one continuous fire record from two different satellites, enabling early warning and response across the 2012 sensor change.**
+[![CI](https://github.com/shahmirkhan106/firelens/actions/workflows/ci.yml/badge.svg)](https://github.com/shahmirkhan106/firelens/actions/workflows/ci.yml)
+
+**A harmonized burning-activity calendar for emergency managers — one continuous fire record from two different satellites, providing a historical baseline for early warning and response across the 2012 sensor change.**
 
 NASA Space Apps Challenge 2026 · *Harmonization of MODIS and VIIRS Hot Spots*
 
-team **scikit** — M. Shahmir Khan · Ahmed Bilal · Abbas Bajwa · Azwar Khan · Sajid Islam
+M. Shahmir Khan
 
 ---
 
 ## Demo
 
-A 30-second demo video is on **[YouTube](https://youtu.be/RYlbIDoLuQQ)** (source file: [`docs/firelens_demo.mp4`](docs/firelens_demo.mp4)), with the narration script and shot list in [`docs/VIDEO_SCRIPT.md`](docs/VIDEO_SCRIPT.md), a 7-slide demo deck in [`docs/DEMO_DECK.md`](docs/DEMO_DECK.md), and the full narrative deck in [`docs/DECK.md`](docs/DECK.md).
+A 28-second demo video is on **[YouTube](https://youtu.be/RYlbIDoLuQQ)** (source file: [`docs/firelens_demo.mp4`](docs/firelens_demo.mp4)), with the narration script and shot list in [`docs/VIDEO_SCRIPT.md`](docs/VIDEO_SCRIPT.md), a 7-slide demo deck in [`docs/DEMO_DECK.md`](docs/DEMO_DECK.md), and the full narrative deck in [`docs/DECK.md`](docs/DECK.md).
 
 ![The 2012 sensor break, raw vs harmonized](docs/shots/california_compare.png)
 
@@ -51,9 +53,9 @@ The clearest demonstration is the sensor disagreement itself. Across the overlap
 
 ## Results
 
-All five regions, calibrated on their 2012–2026 overlap:
+All five regions, calibrated on their 2012–2026 overlap. The R² column is **in-sample**; out-of-sample checks are reported below it.
 
-| Region | VIIRS over-report | FRP ratio | Overlap days | Calibration R² | Peak week | Busiest year |
+| Region | VIIRS over-report | FRP ratio | Overlap days | In-sample R² | Peak week | Busiest year |
 |---|---|---|---|---|---|---|
 | California | 2.31× | 0.49 | 4,653 | 0.922 | 36 (early Sep) | 2020 |
 | North India | 4.90× | 1.69 | 4,327 | **0.586** | 44 (early Nov) | 2016 |
@@ -63,7 +65,19 @@ All five regions, calibrated on their 2012–2026 overlap:
 
 Total raw detections processed: **28,287,761** across 5 regions (~580 MB of parquet), yielding **42,949** harmonized region-days and **6,910,569** cell-days. Each region yields ~7,800–9,100 days of harmonized record and 26 fire seasons. East Siberia is lowest because its high-latitude box has no detections in deep winter, so it contributes ~320 observed days per year rather than ~360.
 
-> **Known weakness — North India (R² 0.586).** Its 4.9× inflation and sharply-peaked Oct–Nov crop-residue burning are far outside what the other regions show, so the linear overlap fit explains much less variance there. The trend is likely genuine (agricultural burning is a distinct regime from wildfire), but the calibration is the least trustworthy of the five. Flagged rather than hidden; would want a regime-aware or nonlinear fit before treating it as quantitative.
+**Out-of-sample validation** (committed in each region's `validation.json`; VIIRS-only predictor):
+
+| Region | Leave-one-year-out median R² | Forward 2012–2020 → 2021–2025 R² |
+|---|---:|---:|
+| California | 0.860 | 0.917 |
+| North India | **0.586** | **0.599** |
+| Amazon Basin | 0.880 | 0.917 |
+| Australia NSW | 0.845 | 0.809 |
+| East Siberia | 0.932 | 0.954 |
+
+The forward check fits 2012–2020 and tests 2021–2025; the leave-one-year-out check refits without each year in turn. These are the honest generalization numbers — the in-sample R² is higher by construction.
+
+> **Known weakness — North India (in-sample R² 0.586; LOYO 0.586; forward 0.599).** Its 4.9× inflation and sharply-peaked Oct–Nov crop-residue burning are far outside what the other regions show, so the linear overlap fit explains much less variance there. The trend is likely genuine (agricultural burning is a distinct regime from wildfire), but the calibration is the least trustworthy of the five. Flagged rather than hidden; would want a regime-aware or nonlinear fit before treating it as quantitative.
 
 ---
 
@@ -83,7 +97,22 @@ Regions: California, North India (crop residue), Amazon Basin, Australia NSW, Ea
 
 ## Quick start
 
-### Prerequisites
+### Fast path — run the submitted demo without downloading raw data
+
+The repo ships the built `data/processed/` artifacts, including `overlap.json` and
+`validation.json`. That is enough to run the API, the UI, the tests, and every
+diagnostic card. No FIRMS key or `data/raw/` download is needed.
+
+```bash
+scripts/bootstrap.sh --dev
+.venv/bin/python -m pytest tests/ -q   # 24 tests
+# then start the API + UI as shown in step 3 below
+```
+
+`scripts/build_all.sh` and `scripts/check_data.py` are only for a **source rebuild**
+from `data/raw/`; they are not part of the judge/demo fast path.
+
+### Full rebuild prerequisites
 - Python 3.11+ · Node 18+
 - A free [FIRMS MAP_KEY](https://firms.modaps.eosdis.nasa.gov/api/map_key/) (requires an [Earthdata Login](https://urs.earthdata.nasa.gov/))
 
@@ -104,6 +133,10 @@ export FIRMS_MAP_KEY=your_key_here
 python scripts/download_firms.py --aois california --products MODIS_SP VIIRS_SNPP_SP --years 2001-2026
 ```
 
+The `--years 2001-2026` range is safe for both products: the downloader clamps each
+product to its archive start (MODIS 2001, S-NPP 2012) and clamps S-NPP's end to
+1 Nov 2026. Use `--products VIIRS_NOAA20_SP` for the forward-looking replacement.
+
 The FIRMS area API accepts **max 5 days per request**, so the downloader batches automatically. It is slow by nature (tens of thousands of API calls) and resumable:
 
 ```bash
@@ -122,9 +155,12 @@ Long jobs must be detached to survive a dropped connection:
 python scripts/daemon.py --log logs/download.log --cmd python scripts/download_firms.py --aois east-siberia --products MODIS_SP VIIRS_SNPP_SP --years 2001-2026 --resume
 ```
 
-> Note the API takes the **source key** (`MODIS_SP`, `VIIRS_SNPP_SP`), not the descriptive labels in the `PRODUCTS` config dict — passing the label yields a generic `Invalid source.` 400. Rate limit is 5000 transactions per 10 minutes. The VIIRS S-NPP archive is scheduled for retirement, so download it before Nov 2026.
+> Note the API takes the **source key** (`MODIS_SP`, `VIIRS_SNPP_SP`), not the descriptive labels in the `PRODUCTS` config dict — passing the label yields a generic `Invalid source.` 400. Rate limit is 5000 transactions per 10 minutes.
 
-> ⚠️ **Time-sensitive:** the Suomi NPP VIIRS feed ends **1 Nov 2026**. Pull the S-NPP archive before then; NOAA-20 is the forward-looking replacement.
+> ℹ️ **Archive status:** the Suomi NPP VIIRS archive ended **1 Nov 2026**. This
+> submission is the committed snapshot through **30 June 2026**. For new data use
+> `VIIRS_NOAA20_SP`; the downloader supports it, while the committed artifact set
+> uses the challenge-listed `VIIRS_SNPP_SP` product.
 
 ### 2. Run the pipeline
 
@@ -135,7 +171,14 @@ python scripts/build_pipeline.py --aoi california
 scripts/build_all.sh
 ```
 
-Outputs land in `data/processed/<aoi>/`: `calibration.csv`, `climatology.csv`, `peak_season.csv`, `anomalies.csv`, `calendar_grid.csv`, `merged.parquet`, `meta.json`. A full `scripts/build_all.sh` run over all five regions takes ~11 minutes (Amazon and East Siberia dominate; they chunk the daily aggregation by year).
+`build_all.sh` requires `data/raw/` from step 1. On a fresh clone, use the **Fast
+path** above; the committed processed artifacts are enough for the app and tests.
+
+Outputs land in `data/processed/<aoi>/`: `calibration.csv`, `climatology.csv`,
+`peak_season.csv`, `anomalies.csv`, `calendar_grid.csv`, `merged.parquet`,
+`meta.json`, `overlap.json`, `validation.json`. A full `scripts/build_all.sh` run
+over all five regions takes ~11 minutes (Amazon and East Siberia dominate; they
+chunk the daily aggregation by year).
 
 ### 2b. Run the tests
 
@@ -205,14 +248,14 @@ python scripts/check_inflation.py
 
 ### Why the FRP ratio is interesting
 
-Across regions, VIIRS's *fire-pixel* count runs 2.2–4.9× above MODIS, but its **Fire Radiative Power sums to 0.50–0.89×** of MODIS (the exception being North India at 1.69×). The two sensors disagree about *how much is burning* versus *how hot*. That divergence is why calibration is fitted per-region on the local overlap rather than applied globally — and why `unique_cells` is used as the harmonized metric rather than FRP.
+Across regions, the **median daily ratio of VIIRS to MODIS H3 cells** runs **2.31–4.90×**, while VIIRS's **Fire Radiative Power sums** are **0.49–0.89×** of MODIS (the exception being North India at 1.69×). Those are different measurements: the first is a median over shared H3-cell days, not a raw-detection ratio. On the single-day California example above, raw detections were 4.0× and H3 cells 1.52× — do not compare that 1.52× with the 2.31× median; they answer different questions. The two sensors disagree about *how much is burning* versus *how hot*. That divergence is why calibration is fitted per-region on the local overlap rather than applied globally — and why `unique_cells` is used as the harmonized metric rather than FRP.
 
 ### API
 
 | Endpoint | Returns |
 |---|---|
 | `GET /aois` | list of processed regions |
-| `GET /aoi/{aoi}/summary` | headline stats: inflation factor, calibration R², peak week, busiest year, overlap facts |
+| `GET /aoi/{aoi}/summary` | headline stats: inflation factor, in-sample and out-of-sample R², peak week, busiest year, overlap facts |
 | `GET /aoi/{aoi}/calendar` | `years[]`, `day_of_year[]`, `grid[][]` |
 | `GET /aoi/{aoi}/climatology` | `weeks[]`, `p10[]`, `median[]`, `p90[]` |
 | `GET /aoi/{aoi}/peak-season` | per-year `start_week`, `peak_week`, `end_week`, `annual_total` |
@@ -220,6 +263,7 @@ Across regions, VIIRS's *fire-pixel* count runs 2.2–4.9× above MODIS, but its
 | `GET /aoi/{aoi}/comparison` | aligned `modis[]`, `viirs[]`, `harmonized[]` daily series (null where a sensor is absent) — what the "Why harmonize" chart renders |
 | `GET /aoi/{aoi}/timeseries?sensor=raw\|harmonized` | single daily series, either the naive unscaled splice or the calibrated output |
 | `GET /aoi/{aoi}/calibration` | `intercept`, `slope`, `r2`, `overlap_start` |
+| `GET /aoi/{aoi}/validation` | leave-one-year-out and forward-holdout R²/MAE |
 | `POST /cache/clear[?aoi=…]` | drop cached artifacts (optionally one region) and re-warm |
 | `GET /cache/status` | per-region file stamps + cache hit/miss counters |
 
@@ -276,13 +320,13 @@ firelens/
 ├── data/
 │   ├── raw/                   downloaded parquet, per aoi/product/year
 │   ├── daily/                 intermediate daily aggregates (cached)
-│   └── processed/             published artifacts per AOI
+│   └── processed/             published artifacts per AOI (incl. overlap.json, validation.json)
 ├── docs/
 │   ├── DECK.md                full narrative deck
 │   ├── DEMO_DECK.md           7-slide demo deck
-│   ├── VIDEO_SCRIPT.md        30s demo narration + shot list
+│   ├── VIDEO_SCRIPT.md        28s demo narration + shot list
 │   ├── SUBMISSION.md          submission-ready project text
-│   ├── firelens_demo.mp4      30-second demo video
+│   ├── firelens_demo.mp4      28-second demo video
 │   └── shots/                 captured UI screenshots (region × tab)
 └── logs/
 ```
@@ -294,10 +338,10 @@ firelens/
 - **MODIS is the reference scale.** It has the longer archive (2001→), so VIIRS is mapped onto it rather than the reverse. The result is "MODIS-equivalent," which is the honest label for a merged series.
 - **The harmonized series prefers measured MODIS wherever it exists.** Because the archives overlap for ~14 years rather than handing off at 2012, the output is mostly *measured* MODIS data with calibrated VIIRS filling only the days MODIS missed. Per region, the VIIRS-calibrated share of post-2012 *days* ranges from **1.8% (Amazon)** to **30.5% (East Siberia)**. Measured in cell-days instead of days the share collapses — North India **0.9%**, California **0.5%**, NSW **0.2%**, Amazon **0.02%**, East Siberia **0.01%** — because MODIS goes missing mostly on low-fire days, so VIIRS fills dates while adding almost none of the total signal. A stricter reading — treat MODIS and VIIRS as one blended sensor era from 2012 on, fitting calibration on the pre-2012 overlap — would be more self-consistent and is the obvious next step.
 - **`unique_cells` as the metric, not FRP.** It is robust, directly interpretable, and comparable across sensors. FRP disagrees in *direction* between sensors and is left available in the data but not used for harmonization.
-- **Per-region linear calibration.** Simple and inspectable, but assumes a roughly linear sensor relationship that holds well for wildfire (R² 0.90–0.95) and poorly for crop-residue burning (0.586).
+- **Per-region linear calibration.** Simple and inspectable, but assumes a roughly linear sensor relationship that holds well for wildfire (in-sample R² 0.90–0.95; leave-one-year-out 0.85–0.93) and poorly for crop-residue burning (0.586 in-sample, 0.586 LOYO, 0.599 forward).
 - **Gridding reduces but does not eliminate inflation.** Res 8 (~0.7 km²) approximates MODIS footprints; it is not a perfect common ground. Residual inflation is what the calibration slope absorbs.
 - **The cache self-invalidates on file changes.** Re-running the pipeline for a region is picked up immediately — no restart needed. (`POST /cache/clear` remains available for a forced reload.)
-- **No map view.** The app is a calendar and charts only; a spatial map would be the natural next feature.
+- **Map picker is preset-based.** The Leaflet map draws a polygon, but it snaps to the nearest of the five precomputed regions and says so explicitly. A true custom-area pipeline is the natural next step.
 - **Cloud/edge artifacts are not modelled.** VIIRS near cloud edges is prone to false positives that MODIS handles differently. Averaging over the overlap absorbs this partially, but it is a known source of residual scatter.
 
 ---
@@ -309,6 +353,14 @@ MODIS C6.1 (1 km) and VIIRS S-NPP (375 m), 2001 → 2026 (snapshot through 30 Ju
 <https://firms.modaps.eosdis.nasa.gov/>
 
 ---
+
+## Timeline and submission
+
+- **Event window:** NASA Space Apps Challenge 2026, 14–15 November 2026. Global project deadline: **15 November 2026, 23:59 local time**; check your local event's earlier cutoff.
+- **Repo timeline:** public repository created `2026-11-14T13:16:12Z`; all solution commits are dated `2026-11-14` (event window).
+- **Artifacts:** the committed `data/processed/` set is a **NASA FIRMS snapshot through 2026-06-30**, labelled in the app and each `meta.json`.
+- **Submission package:** public GitHub repo, hosted 28-second YouTube demo, 7-slide demo deck, MIT license, AI-assistance disclosure, NASA data attribution.
+- **Team confirmation (outside this repo):** team registration/event selection, adult/guardian-consent status for any member under 18, and the local-event deadline must be confirmed in the submission portal. The repository cannot verify those facts.
 
 ## License
 

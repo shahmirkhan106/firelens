@@ -62,16 +62,27 @@ def process(aoi: str, raw=ROOT / "data" / "raw", out=ROOT / "data" / "processed"
     grid.to_csv(out_dir / "calendar_grid.csv")
 
     merged.to_parquet(out_dir / "merged.parquet", index=False)
-    save_artifacts_meta(aoi, out)
+    overlap = harmonize.overlap_facts(daily["MODIS_SP"], daily["VIIRS_SNPP_SP"])
+    (out_dir / "overlap.json").write_text(json.dumps(overlap, indent=2))
+    validation = harmonize.validate_calibration(merged)
+    (out_dir / "validation.json").write_text(json.dumps(validation, indent=2))
+    save_artifacts_meta(aoi, out, merged)
     print(f"[calendar] {aoi}: climatology {len(cl)} weeks, peaks {len(peaks)} years")
 
 
-def save_artifacts_meta(aoi: str, out: Path):
+def save_artifacts_meta(aoi: str, out: Path, merged: pd.DataFrame):
+    dates = pd.to_datetime(merged["acq_date"])
     meta = {
         "aoi": aoi,
         "metric": "unique_cells_harmonized",
         "resolution_h3": 8,
         "products": PRODUCTS,
+        "snapshot_start": dates.min().strftime("%Y-%m-%d"),
+        "snapshot_end": dates.max().strftime("%Y-%m-%d"),
+        "harmonized_days": int(merged["unique_cells_harmonized"].notna().sum()),
+        "cell_days": int(merged["unique_cells_harmonized"].fillna(0).sum()),
+        "source": "NASA FIRMS MODIS_SP + VIIRS_SNPP_SP",
+        "generated_by": "scripts/build_pipeline.py",
     }
     (out / aoi / "meta.json").write_text(json.dumps(meta, indent=2))
 

@@ -80,6 +80,12 @@ export default function SensorComparison({ comparison, summary, aoi }) {
     summary && typeof summary === "object" && !Array.isArray(summary) && summary.calibration
       ? summary.calibration
       : {};
+  const val =
+    summary && typeof summary === "object" && !Array.isArray(summary) && summary.validation
+      ? summary.validation
+      : {};
+  const loyo = val.loyo && typeof val.loyo === "object" ? val.loyo : {};
+  const forward = val.forward && typeof val.forward === "object" ? val.forward : {};
   const yr = Array.isArray(summary?.years) ? summary.years : null;
   const gapYears =
     summary?.gap_years && typeof summary.gap_years === "object"
@@ -120,10 +126,22 @@ export default function SensorComparison({ comparison, summary, aoi }) {
           tone="warn"
         />
         <Stat
-          label="Calibration quality (R²)"
+          label="In-sample calibration R²"
           value={cal.r2 ?? "—"}
           sub={cal.slope ? `VIIRS scaled by ${cal.slope}` : ""}
           tone={cal.r2 >= 0.85 ? "good" : "warn"}
+        />
+        <Stat
+          label="Out-of-sample R²"
+          value={loyo.r2_median ?? "—"}
+          sub={
+            forward.r2 != null
+              ? `forward ${forward.test_years}: ${forward.r2}`
+              : loyo.folds
+              ? `${loyo.folds}-fold leave-one-year-out`
+              : ""
+          }
+          tone={loyo.r2_median == null ? "" : loyo.r2_median >= 0.85 ? "good" : "warn"}
         />
         <Stat
           label="Harmonized span"
@@ -173,6 +191,13 @@ export default function SensorComparison({ comparison, summary, aoi }) {
               Because the two disagree this much, joining them into one timeline without
               correction would invent a climate trend that never happened — and the gap is not
               even constant, since it scales with how much fire is burning.
+            </p>
+            <p>
+              The in-sample R² is the fit on the overlap. The out-of-sample card
+              refits the correction without one year at a time and predicts that held-out
+              year; the forward check fits 2012–2020 and tests 2021 onward. Those are the
+              honest generalization numbers, and they are committed in each region's{" "}
+              <code>validation.json</code>.
             </p>
             <p>
               The wide <span className="swatch" style={{ background: COLORS.modis }} /> band is

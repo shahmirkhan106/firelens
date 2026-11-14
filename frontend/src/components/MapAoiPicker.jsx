@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
@@ -18,6 +18,7 @@ export default function MapAoiPicker({ onAoiSelect, selectedAoi }) {
   const mapRef = useRef(null);
   const mapContainer = useRef(null);
   const drawnItemsRef = useRef(null);
+  const [snapNotice, setSnapNotice] = useState(null);
 
   // Initialize map once
   useEffect(() => {
@@ -32,7 +33,8 @@ export default function MapAoiPicker({ onAoiSelect, selectedAoi }) {
     mapRef.current = map;
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
     }).addTo(map);
 
     const drawnItems = new L.FeatureGroup();
@@ -70,16 +72,22 @@ export default function MapAoiPicker({ onAoiSelect, selectedAoi }) {
       return best;
     };
 
+    const selectNearest = (bounds) => {
+      const id = nearestAoiId(bounds);
+      setSnapNotice(id);
+      onAoiSelect(id);
+    };
+
     map.on(L.Draw.Event.CREATED, (e) => {
       const layer = e.layer;
       drawnItems.clearLayers();
       drawnItems.addLayer(layer);
-      onAoiSelect(nearestAoiId(layer.getBounds()));
+      selectNearest(layer.getBounds());
     });
 
     map.on(L.Draw.Event.EDITED, (e) => {
       e.layers.eachLayer((layer) => {
-        onAoiSelect(nearestAoiId(layer.getBounds()));
+        selectNearest(layer.getBounds());
       });
     });
 
@@ -89,6 +97,11 @@ export default function MapAoiPicker({ onAoiSelect, selectedAoi }) {
 
     return () => map.remove();
   }, [onAoiSelect]);
+
+  // Clear the snap notice when the user picks a different preset chip.
+  useEffect(() => {
+    if (snapNotice && selectedAoi !== snapNotice) setSnapNotice(null);
+  }, [selectedAoi, snapNotice]);
 
   // Update drawn preset rectangle when selectedAoi changes
   useEffect(() => {
@@ -110,8 +123,16 @@ export default function MapAoiPicker({ onAoiSelect, selectedAoi }) {
   return (
     <div className="map-aoi-picker">
       <div ref={mapContainer} className="map-container" />
+      {snapNotice && (
+        <div className="map-snap-warning" role="status" aria-live="polite">
+          <b>Nearest processed region: {PRESET_AOIS[snapNotice].label}.</b>{" "}
+          This is not your exact drawn polygon — FireLens ships five precomputed regions,
+          not an on-demand custom-area download.
+        </div>
+      )}
       <div className="map-hint">
-        Draw a rectangle/polygon on the map. Drawn areas use the nearest processed preset region; five preset regions are available above.
+        Draw a rectangle/polygon to snap to the nearest of the five processed regions.
+        For a true custom AOI, run the pipeline with your own bounding box.
       </div>
     </div>
   );

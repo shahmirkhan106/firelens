@@ -7,6 +7,8 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from pipeline.harmonize import validate_calibration
+
 DATA = Path(__file__).resolve().parent.parent / "data" / "processed"
 DAILY = Path(__file__).resolve().parent.parent / "data" / "daily"
 
@@ -217,6 +219,7 @@ def _summary_cached(aoi: str, _stamp_key: float) -> dict:
     )
 
     overlap = _overlap_facts(aoi, _aoi_stamp(aoi))
+    validation = _validation_facts(aoi, _aoi_stamp(aoi))
 
     peak_week = int(clim["median"].idxmax())
     srs = df.set_index("acq_date")["unique_cells_harmonized"]
@@ -275,7 +278,28 @@ def _summary_cached(aoi: str, _stamp_key: float) -> dict:
             "overlap_start": calib.get("overlap_start"),
         },
         "overlap": overlap,
+        "validation": validation,
     }
+
+
+@app.get("/aoi/{aoi}/validation")
+def validation(aoi: str):
+    return _validation_facts(aoi, _aoi_stamp(aoi))
+
+
+@lru_cache(maxsize=16)
+def _validation_facts(aoi: str, _stamp_key: float) -> dict:
+    """Out-of-sample calibration check, committed as validation.json."""
+    fp = _aoi_dir(aoi) / "validation.json"
+    if fp.exists():
+        try:
+            facts = json.loads(fp.read_text())
+            if "loyo" in facts or "forward" in facts:
+                return facts
+        except (OSError, ValueError):
+            pass
+    # Older builds: derive it from the committed merged.parquet.
+    return validate_calibration(_load(aoi, "merged.parquet"))
 
 
 @lru_cache(maxsize=16)
@@ -284,26 +308,54 @@ def _overlap_facts(aoi: str, _stamp_key: float) -> dict:
 
     This is the core problem FireLens solves: on identical days and identical
     ground, VIIRS (375 m) reports far more distinct fire cells than MODIS (1 km).
+
+    Prefer ``overlap.json`` (committed with the processed artifacts) so a fresh
+    clone renders the "Why harmonize" cards without ``data/daily``. Fall back to
+    ``merged.parquet``, then the gitignored daily cache for older builds.
     """
-    daily = DAILY / aoi
-    mp, vp = daily / "MODIS_SP.parquet", daily / "VIIRS_SNPP_SP.parquet"
-    if not (mp.exists() and vp.exists()):
-        return {}
-    m = pd.read_parquet(mp).set_index("acq_date")
-    v = pd.read_parquet(vp).set_index("acq_date")
-    j = m.join(v, lsuffix="_m", rsuffix="_v", how="inner")
+    fp = _aoi_dir(aoi) / "overlap.json"
+    if fp.exists():
+        try:
+            facts = json.loads(fp.read_text())
+            if "cell_inflation" in facts:
+                return facts
+        except (OSError, ValueError):
+            pass
+
+    # Fallback for artifacts built before overlap.json existed. The merged file
+    # always ships with the repo, so this still works in a fresh clone.
+    merged = _load(aoi, "merged.parquet")
+    m = merged[["acq_date", "unique_cells_modis"]].dropna()
+    v = merged[["acq_date", "unique_cells_viirs"]].dropna()
+    j = m.merge(v, on="acq_date", how="inner")
     if j.empty:
         return {}
-    ratio = (j["unique_cells_v"] / j["unique_cells_m"].replace(0, pd.NA)).median()
-    return {
+    ratio = (j["unique_cells_viirs"] / j["unique_cells_modis"].replace(0, pd.NA)).median()
+    facts = {
         "days": int(len(j)),
-        "from": str(j.index.min().date()),
-        "to": str(j.index.max().date()),
+        "from": str(pd.to_datetime(j["acq_date"]).min().date()),
+        "to": str(pd.to_datetime(j["acq_date"]).max().date()),
         "cell_inflation": round(float(ratio), 2),
-        "frp_ratio": round(float(j["frp_mw_v"].sum() / j["frp_mw_m"].sum()), 2),
-        "modis_cells": int(j["unique_cells_m"].sum()),
-        "viirs_cells": int(j["unique_cells_v"].sum()),
+        "modis_cells": int(j["unique_cells_modis"].sum()),
+        "viirs_cells": int(j["unique_cells_viirs"].sum()),
+        "source": "merged.parquet",
     }
+
+    # Last resort: older/local builds with the raw daily cache still available.
+    daily = DAILY / aoi
+    mp, vp = daily / "MODIS_SP.parquet", daily / "VIIRS_SNPP_SP.parquet"
+    if mp.exists() and vp.exists():
+        try:
+            md = pd.read_parquet(mp).set_index("acq_date")
+            vd = pd.read_parquet(vp).set_index("acq_date")
+            jd = md.join(vd, lsuffix="_m", rsuffix="_v", how="inner")
+            if not jd.empty:
+                facts["frp_ratio"] = round(
+                    float(jd["frp_mw_v"].sum() / jd["frp_mw_m"].sum()), 2
+                )
+        except (OSError, ValueError, KeyError):
+            pass
+    return facts
 
 
 @app.get("/aoi/{aoi}/anomalies")
@@ -416,6 +468,7 @@ _CACHED = (
     _comparison_cached,
     _anomalies_cached,
     _summary_cached,
+    _validation_facts,
     _overlap_facts,
 )
 

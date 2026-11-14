@@ -57,10 +57,16 @@ def analyze(aoi: str, min_frac: float) -> list:
                 "rows": nrows, "typical": typical, "is_final": is_final,
                 "ok_marker": ok, "gap": gap,
             })
-            if not ok:
+            marker = RAW / aoi / product / f"{y}.ok"
+            if gap:
+                # Never stamp a gap as complete. A stale marker from an earlier
+                # run would make --resume trust a truncated year forever.
+                if marker.exists():
+                    marker.unlink(missing_ok=True)
+            elif not ok:
                 # Stamp verified files with their completion marker so future
                 # resume/verify runs stop asking about them.
-                (RAW / aoi / product / f"{y}.ok").write_text(
+                marker.write_text(
                     f"days={days}\nrows={nrows}\nchecked=check_data.py\n")
     return rows
 
@@ -71,6 +77,13 @@ def main():
     p.add_argument("--min", dest="min_frac", type=float, default=0.5,
                    help="fraction of the region/product norm below which a year is a gap")
     args = p.parse_args()
+    if not RAW.is_dir():
+        print(
+            "No data/raw/ directory. This check is only for a source rebuild.\n"
+            "A fresh clone can run the app and tests from the committed "
+            "data/processed/ artifacts; see the README Fast path."
+        )
+        return 1
     aois = [args.aoi] if args.aoi else sorted(x.name for x in RAW.iterdir() if x.is_dir())
     bad = []
     for aoi in aois:

@@ -45,3 +45,13 @@
   color: var(--muted);
   text-align: center;
 }
+.map-snap-warning {
+  border: 1px solid var(--warm);
+  border-left: 4px solid var(--warm);
+  border-radius: 6px;
+  background: rgba(217, 130, 43, 0.12);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 8px 10px;
+}

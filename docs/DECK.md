@@ -1,23 +1,23 @@
 ---
 title: FireLens
 subtitle: A harmonized burning-activity calendar for emergency managers
-author: team scikit
+author: M. Shahmir Khan
 ---
 
 # FireLens
 
 **A harmonized burning-activity calendar for emergency managers — one continuous
-fire record from two different satellites, enabling early warning and response
-across the 2012 sensor change.**
+fire record from two different satellites — a historical baseline for early
+warning and response across the 2012 sensor change.**
 
 NASA Space Apps Challenge 2026 · *Harmonization of MODIS and VIIRS Hot Spots*
 
-team **scikit** — M. Shahmir Khan · Ahmed Bilal · Abbas Bajwa · Azwar Khan · Sajid Islam
+M. Shahmir Khan
 
 <!-- notes:
 Open on the one-line pitch. "Two satellites have watched Earth's fires for 25
-years. We made their records comparable, so a change you see is real fire — not
-a change of instrument."
+years. We made their records comparable, so a change you see is real change in
+detected fire activity — not a change of instrument."
 -->
 
 ---
@@ -33,7 +33,8 @@ resolutions:
 | **VIIRS** S-NPP | 375 m | 2 | 2012 → 2026 |
 
 Both observe *the same fires* — but VIIRS reports **2.3×–4.9×** as many distinct
-fire cells as MODIS, purely because its pixels are finer.
+H3 fire cells as MODIS after gridding. Finer pixels and greater sensitivity let
+it detect more small or low-intensity fires that MODIS misses.
 
 Emergency managers need to **compare a current fire against historical patterns**,
 recognize changes relative to the multi-year median, and strengthen forecasting.
@@ -76,7 +77,7 @@ more") into a number we can calibrate against.
 5. **Publishes** the result as an interactive **burning-activity calendar**
 
 Output: **one defensible activity series, 2001 → June 2026**, where year-over-year
-change reflects **real fire**, not a change of satellite.
+change reflects **real change in detected fire activity**, not a change of satellite.
 
 **Emergency managers can now:**
 - Select a region → view and download analytics & visualizations
@@ -114,7 +115,7 @@ side in every artifact.
 
 ## Results — all five regions
 
-| Region | VIIRS over-report | FRP ratio | Overlap days | Calibration R² | Peak week | Busiest year |
+| Region | VIIRS over-report | FRP ratio | Overlap days | In-sample R² | Peak week | Busiest year |
 |---|---|---|---|---|---|---|
 | California | 2.31× | 0.49 | 4,653 | 0.922 | 36 (early Sep) | 2020 |
 | North India | 4.90× | 1.69 | 4,327 | **0.586** | 44 (early Nov) | 2016 |
@@ -128,8 +129,12 @@ side in every artifact.
 Five fire regimes, one method: Mediterranean · monsoon crop-residue · equatorial ·
 temperate · boreal.
 
+**Out-of-sample:** leave-one-year-out median R² **0.85–0.93**; forward
+2012–2020 → 2021–2025 R² **0.81–0.95**. North India is the honest exception
+(LOYO 0.586, forward 0.599). Committed in `validation.json` and shown in the app.
+
 <!-- notes:
-R2 of 0.90-0.95 for genuine wildfire. The exception is North India — call it out
+In-sample R2 of 0.90-0.95 for genuine wildfire; report the out-of-sample numbers too. The exception is North India — call it out
 proactively on the next slide.
 -->
 
@@ -205,25 +210,37 @@ told you where our method is weak.
   VIIRS-calibrated share of post-2012 cell-days is **0.01%–0.9%** — the correction
   fixes *dates*, not the magnitude of the record.
 - **Per-region linear fit** — simple and inspectable; nonlinear fit for crop burning.
-- **Map-based AOI selection added** — custom areas use nearest preset's data.
+- **Map-based AOI selection added** — drawn areas snap to the nearest of five
+  precomputed regions; the UI labels this explicitly. A true custom-AOI pipeline
+  is the next step.
+- **Snapshot ends 30 June 2026** — the historical baseline is complete, but this
+  is not a live/forecast feed. NOAA-20 is the forward-looking data source.
 - **Cloud-edge artifacts** not modelled — partly absorbed by the overlap average.
 
 ---
 
 ## Try it / verify it
 
+Fast path (committed artifacts, no FIRMS key):
+
 ```bash
 scripts/bootstrap.sh --dev        # venv + Python + frontend deps
-scripts/build_all.sh              # rebuild all five regions (~11 min)
-.venv/bin/python -m pytest tests/ -q   # 21 tests
+.venv/bin/python -m pytest tests/ -q   # 24 tests
 # API + frontend, then open http://127.0.0.1:4173
 ```
 
-- **Data:** NASA FIRMS — MODIS C6.1 (1 km) + VIIRS S-NPP (375 m), 2001 → June 2026
-- **Code:** github.com/shahmirkhan106/firelens
-- **License:** MIT
+Full source rebuild only (needs `data/raw/` from README step 1):
+`scripts/build_all.sh`
 
-**FireLens — a change you see is real fire, not a change of instrument.**
+- **Data:** NASA FIRMS — MODIS C6.1 (1 km) + VIIRS S-NPP (375 m), snapshot → 30 June 2026
+- **Code:** https://github.com/shahmirkhan106/firelens
+- **Demo video (28s, hosted):** https://youtu.be/RYlbIDoLuQQ
+- **License:** MIT
+- **References:** NASA FIRMS API · MODIS MOD14 · VIIRS VNP14IMG · Uber H3 ·
+  Leaflet/OpenStreetMap · React/Vite · FastAPI
+
+**FireLens — a change you see is real change in detected fire activity, not a
+change of instrument.**
 
 <!-- notes:
 Close on the repository and the one-line pitch. Invite the judge to run the tests

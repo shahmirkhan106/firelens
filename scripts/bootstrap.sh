@@ -37,7 +37,10 @@ else
 fi
 
 echo
-echo "Done. Next:"
-echo "  scripts/build_all.sh            # integrity check + rebuild artifacts"
-echo "  .venv/bin/uvicorn backend.app:app --port 8000   # serve the API"
-echo "  cd frontend && npm run build && npm run preview  # serve the UI"
+echo "Done. Next (fast path — committed data/processed/ artifacts):"
+echo "  .venv/bin/python -m pytest tests/ -q                 # tests"
+echo "  .venv/bin/uvicorn backend.app:app --port 8000       # serve the API"
+echo "  cd frontend && npm run build && npm run preview     # serve the UI"
+echo
+echo "Full source rebuild only (requires data/raw/ from README step 1):"
+echo "  scripts/build_all.sh"

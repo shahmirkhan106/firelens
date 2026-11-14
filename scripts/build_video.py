@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble the 30-second FireLens demo video from the captured screenshots.
+"""Assemble the 28-second FireLens demo video from the captured screenshots.
 
 Narration lives in docs/VIDEO_SCRIPT.md; this renders the visuals (title cards,
 captioned screenshots, end card) and crossfades them into one H.264 mp4 that is
@@ -31,14 +31,14 @@ FONT_R = "/usr/share/fonts/TTF/DejaVuSans.ttf"
 SCENES = [
     ("TITLE", 3, "", "One continuous fire record from two satellites"),
     ("california_compare", 7, "The problem: a 2012 sensor break",
-     "Raw MODIS + VIIRS counts jump 2-5x when the sensor changes; FireLens measures the overlap and removes that artifact"),
+     "Raw MODIS + VIIRS H3 cells jump 2.3-4.9x when the sensor changes; FireLens measures the overlap and removes that artifact"),
     ("california_calendar", 6, "A burning-activity calendar",
      "One row per year, one square per day, 2001 to June 2026"),
     ("california_anomalies", 5.5, "Unusual weeks vs the region's history",
      "Robust p10-p90 anomalies flag critical periods without being fooled by one extreme week"),
     ("amazon_calendar", 5, "Five fire regimes, one method",
      "Amazon - NSW - East Siberia - California - North India"),
-    ("END", 4.5, "", "M. Shahmir Khan | Ahmed Bilal | Abbas Bajwa | Azwar Khan | Sajid Islam"),
+    ("END", 4.5, "", "M. Shahmir Khan"),
 ]
 
 
@@ -77,7 +77,7 @@ def title_frame():
 def end_frame(caption):
     im = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(im)
-    centered(d, 340, "FireLens - team scikit", font(FONT_B, 76), FG)
+    centered(d, 340, "FireLens - M. Shahmir Khan", font(FONT_B, 76), FG)
     centered(d, 450, caption, font(FONT_R, 34), FG)
     centered(d, 540, "Data: NASA FIRMS (MODIS + VIIRS)", font(FONT_R, 34), ACCENT)
     centered(d, 610, "github.com/shahmirkhan106/firelens", font(FONT_R, 30), MUTED)

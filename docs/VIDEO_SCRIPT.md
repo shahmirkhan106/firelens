@@ -1,10 +1,10 @@
-# FireLens — 30-second demo video script
+# FireLens — 28-second demo video script
 
 Hosted: https://youtu.be/RYlbIDoLuQQ
 
-Submission-compliant cut: **28 seconds**, silent with on-screen captions (the
-30-second limit applies to the project demo video). Narration is optional and is
-provided below if a voiceover is added.
+Submission-compliant cut: **28 seconds**, silent with on-screen captions (within
+the 30-second project-demo limit). Narration is optional and is provided below if
+a voiceover is added.
 
 ## Narration (~70 words, ~28s at a natural pace)
 
@@ -12,19 +12,19 @@ provided below if a voiceover is added.
 > joined MODIS in 2012, raw fire counts jumped two to five times — a sensor
 > change, not a fire change. FireLens measures the overlap, fits VIIRS onto the
 > MODIS scale, and rebuilds one continuous burning-activity calendar. Five
-> regions. One defensible record. A change you see is real fire — not a change
-> of instrument.
+> regions. One defensible record. A change you see is real change in detected
+> fire activity — not a change of instrument.
 
 ## Shot list
 
 | Time | Visual | Caption |
 |---|---|---|
 | 0:00–0:03 | Title card | One continuous fire record from two satellites |
-| 0:03–0:10 | `california_compare.png` | The problem: a 2012 sensor break — raw MODIS + VIIRS counts jump 2–5× when the sensor changes |
-| 0:10–0:16 | `california_calendar.png` | A burning-activity calendar: one row per year, one square per day, 2001–2026 |
-| 0:16–0:21 | `california_anomalies.png` | Unusual weeks vs the region's own history, using robust p10–p90 anomalies |
-| 0:21–0:26 | `amazon_calendar.png` | Five fire regimes: Amazon, NSW, Siberia, California, North India |
-| 0:26–0:30 | End card | FireLens — team scikit · NASA FIRMS MODIS + VIIRS · GitHub |
+| 0:03–0:09 | `california_compare.png` | The problem: a 2012 sensor break — raw MODIS + VIIRS cells jump 2.3–4.9× when the sensor changes |
+| 0:09–0:15 | `california_calendar.png` | A burning-activity calendar: one row per year, one square per day, 2001–June 2026 |
+| 0:15–0:20 | `california_anomalies.png` | Unusual weeks vs the region's own history, using robust p10–p90 anomalies |
+| 0:20–0:24 | `amazon_calendar.png` | Five fire regimes: Amazon, NSW, Siberia, California, North India |
+| 0:24–0:28 | End card | FireLens — M. Shahmir Khan · NASA FIRMS MODIS + VIIRS · GitHub |
 
 ## Build
 

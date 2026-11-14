@@ -41,10 +41,16 @@ AOIS = {
 # NRT = near-real-time, only the most recent period)
 PRODUCTS = {
     "MODIS_SP": "MODIS (C6.1, 1 km, Terra/Aqua)",
-    "VIIRS_SNPP_SP": "VIIRS S-NPP (375 m) *download before Nov 1, 2026*",
+    "VIIRS_SNPP_SP": "VIIRS S-NPP (375 m; archive ended 1 Nov 2026)",
     "VIIRS_NOAA20_SP": "VIIRS NOAA-20 (375 m)",
     # "VIIRS_NOAA21_SP": "VIIRS NOAA-21 (375 m)",
 }
+
+# Product archive bounds. --years is a user-facing convenience: clamp it per
+# product so a 2001-2026 request does not waste thousands of calls on S-NPP
+# years that do not exist (or request dates after its archive closed).
+PRODUCT_START = {"MODIS_SP": 2001, "VIIRS_SNPP_SP": 2012, "VIIRS_NOAA20_SP": 2018}
+PRODUCT_END = {"VIIRS_SNPP_SP": date(2026, 11, 1)}
 
 # max days per single API request (per current FIRMS docs: 1..5)
 DAY_RANGE = 5
@@ -159,6 +165,15 @@ def main():
                 if args.test:
                     # quick single window mid-August
                     start = end = date(min(y1, 2025), 8, 1)
+
+                if product in PRODUCT_START:
+                    start = max(start, date(PRODUCT_START[product], 1, 1))
+                if product in PRODUCT_END:
+                    end = min(end, PRODUCT_END[product])
+                if start > end:
+                    print(f"  SKIP {product} {y} (outside product archive)")
+                    y += 1
+                    continue
 
                 # Windows we *expect* to request. Tracked so a partially
                 # downloaded year can never masquerade as a complete one.

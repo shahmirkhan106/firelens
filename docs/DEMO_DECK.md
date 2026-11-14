@@ -1,7 +1,7 @@
 ---
 title: FireLens
 subtitle: One continuous fire record from two satellites
-author: team scikit
+author: M. Shahmir Khan
 ---
 
 # FireLens
@@ -13,7 +13,7 @@ land managers — built from NASA FIRMS MODIS + VIIRS active-fire hotspots.
 
 NASA Space Apps Challenge 2026 · *Harmonization of MODIS and VIIRS Hot Spots*
 
-team **scikit** — M. Shahmir Khan · Ahmed Bilal · Abbas Bajwa · Azwar Khan · Sajid Islam
+M. Shahmir Khan
 
 ---
 
@@ -25,7 +25,8 @@ team **scikit** — M. Shahmir Khan · Ahmed Bilal · Abbas Bajwa · Azwar Khan 
 | **VIIRS** S-NPP | 375 m | 2012 → 2026 |
 
 Both observe *the same fires*, but VIIRS reports **2.3×–4.9×** as many distinct
-fire cells purely because its pixels are finer.
+H3 fire cells after gridding. Finer pixels and greater sensitivity let it detect
+more small or low-intensity fires that MODIS misses.
 
 Join the archives without correction and you invent a **fictional spike in
 2012**: activity appears to explode when the satellite changes, not the planet.
@@ -44,7 +45,7 @@ instruments watch the same burning ground and disagree in a measurable way.
 4. **Publish** — one "MODIS-equivalent" series, 2001 → June 2026.
 
 Raw MODIS, raw VIIRS, and harmonized values stay side by side, so the correction
-is auditable.
+is auditable. Out-of-sample checks are committed next to the fit.
 
 ---
 
@@ -56,22 +57,24 @@ fire regimes.
 
 - **28,287,761** raw detections processed
 - **42,949** harmonized region-days · **6,910,569** cell-days
-- Calibration **R² 0.90–0.95** for genuine wildfire
-- Honest exception: North India crop burning **R² 0.59**, flagged not hidden
+- **In-sample R² 0.90–0.95** for genuine wildfire; leave-one-year-out **0.85–0.93**;
+  forward 2012–2020 → 2021–2025 **0.81–0.95**
+- Honest exception: North India crop burning **R² 0.59** (LOYO 0.586, forward 0.599),
+  flagged not hidden
 
 ---
 
 ## The app — five views, one calendar
 
-![The 2012 sensor break, raw vs harmonized](shots/california_compare.png)
-
-![Burning-activity calendar](shots/california_calendar.png)
+| Raw vs harmonized | Burning-activity calendar |
+|---|---|
+| ![The 2012 sensor break, raw vs harmonized](shots/california_compare.png) | ![Burning-activity calendar](shots/california_calendar.png) |
 
 **Why harmonize** · **Calendar** · **Typical season** · **Season timing** · **Unusual weeks**
 
 Each view has a "What am I looking at?" explainer, hover/click readouts, and a
-view-specific CSV export. Draw an area on the map to use the nearest processed
-region.
+view-specific CSV export. The map's draw tool snaps to the nearest of five
+precomputed regions and labels that limitation explicitly.
 
 ---
 
@@ -85,23 +88,29 @@ Emergency responders, scientists, and land managers can:
 - export the harmonized hotspots for their own tools.
 
 **Known limit:** MODIS is the reference scale; the output is explicitly
-"MODIS-equivalent." North India's linear fit is the weakest and is reported as
-such.
+"MODIS-equivalent." The committed snapshot ends 30 June 2026. North India's linear
+fit is the weakest and is reported as such.
 
 ---
 
 ## Try it / verify it
 
+Fast path uses the committed `data/processed/` artifacts — no FIRMS key needed:
+
 ```bash
 scripts/bootstrap.sh --dev
-scripts/build_all.sh
-.venv/bin/python -m pytest tests/ -q   # 21 tests
+.venv/bin/python -m pytest tests/ -q   # 24 tests
 # API + frontend, then open http://127.0.0.1:4173
 ```
 
-- **Code:** https://github.com/shahmirkhan106/firelens
-- **Demo video:** `docs/firelens_demo.mp4` (30s)
-- **Full deck:** `docs/DECK.md`
-- **License:** MIT
+Full source rebuild only (needs `data/raw/` from README step 1):
+`scripts/build_all.sh`
 
-**FireLens — a change you see is real fire, not a change of instrument.**
+- **Code:** https://github.com/shahmirkhan106/firelens
+- **Demo video (28s, hosted):** https://youtu.be/RYlbIDoLuQQ
+- **Full deck:** https://github.com/shahmirkhan106/firelens/blob/main/docs/DECK.md
+- **Data:** NASA FIRMS MODIS C6.1 + VIIRS S-NPP · **License:** MIT
+- **References:** NASA FIRMS API · MODIS MOD14 · VIIRS VNP14IMG · Uber H3 ·
+  Leaflet/OpenStreetMap · React/Vite · FastAPI
+
+**FireLens — a change you see is real change in detected fire activity.**
