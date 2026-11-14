@@ -1,0 +1,2 @@
+aoi,metric,intercept,slope,r2,overlap_start,viirs_shift_days
+amazon,unique_cells,-0.9032,0.4082,0.9009,2012-01-01,0

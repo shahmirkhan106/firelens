@@ -1,0 +1,13 @@
+# FireLens — Python dependencies (API + data pipeline), pinned to the versions
+# used to build and serve the committed artifacts. Reproduce with:
+#   python -m venv .venv && .venv/bin/pip install -r backend/requirements.txt
+fastapi==0.142.2
+uvicorn[standard]==0.54.0
+pandas==3.0.6
+numpy==2.5.3
+pyarrow==25.0.1
+python-multipart==0.0.20
+pydantic==2.13.5
+# pipeline + downloader
+h3==4.5.0
+requests==2.34.2
