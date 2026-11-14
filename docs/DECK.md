@@ -32,7 +32,7 @@ resolutions:
 | **MODIS** C6.1 (Terra/Aqua) | 1 km | 4 | 2001 → 2026 |
 | **VIIRS** S-NPP | 375 m | 2 | 2012 → 2026 |
 
-Both observe *the same fires* — but VIIRS reports **2.2×–4.9×** as many distinct
+Both observe *the same fires* — but VIIRS reports **2.3×–4.9×** as many distinct
 fire cells as MODIS, purely because its pixels are finer.
 
 Emergency managers need to **compare a current fire against historical patterns**,

@@ -25,7 +25,7 @@ NASA FIRMS publishes active-fire hotspots from two satellites that have **very d
 | **MODIS** (C6.1, Terra/Aqua) | 1 km | 4 | 2001 → 2026 |
 | **VIIRS** (S-NPP) | 375 m | 2 | 2012 → 2026 |
 
-Both sensors observe *the same fires*, but they report very different numbers of them. Measured directly on days when both observed the same region, VIIRS counts **2.2× to 4.9×** as many distinct fire cells as MODIS.
+Both sensors observe *the same fires*, but they report very different numbers of them. Measured directly on days when both observed the same region, VIIRS counts **2.3× to 4.9×** as many distinct fire cells as MODIS.
 
 Critically, the two archives **overlap for roughly 14 years** (2012 → June 2026), not merely hand off at a single date. That overlap is what makes the problem measurable rather than a matter of opinion: for more than a decade we can watch both instruments look at the same burning ground and disagree.
 
@@ -45,17 +45,7 @@ The output is a single, defensible "burning activity" series from 2001 through 3
 
 ### Measured effect
 
-The clearest demonstration is the sensor disagreement itself. Over the months where both satellites observed each region, the median ratio of VIIRS to MODIS fire cells is:
-
-| Region | VIIRS / MODIS (median, overlap months) |
-|---|---|
-| North India | **4.27×** |
-| Australia NSW | **2.66×** |
-| Amazon | **2.30×** |
-| East Siberia | **2.26×** |
-| California | **1.98×** |
-
-Leaving that uncorrected would show North Indian burning activity quadrupling the moment you switched archives — with no change on the ground. After calibration, the harmonized series tracks MODIS closely across the overlap (median deviation well under one month-to-month noise band), which is the check that the regression actually works.
+The clearest demonstration is the sensor disagreement itself. Across the overlap period, the median daily ratio of VIIRS to MODIS fire cells ranges from **2.31×** (California and the Amazon) to **4.90×** (North India), detailed in the Results table below. Leaving that uncorrected would show North Indian burning activity quadrupling the moment you switched archives — with no change on the ground. After calibration, the harmonized series tracks MODIS closely across the overlap (median deviation well under one month-to-month noise band), which is the check that the regression actually works.
 
 ---
 
