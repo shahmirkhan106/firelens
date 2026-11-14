@@ -1,0 +1,9 @@
+{
+  "days": 4946,
+  "from": "2012-01-20",
+  "to": "2026-06-30",
+  "cell_inflation": 2.98,
+  "modis_cells": 306750,
+  "viirs_cells": 745592,
+  "frp_ratio": 0.74
+}

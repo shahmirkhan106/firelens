@@ -1,0 +1,106 @@
+{
+  "method": "leave-one-year-out + forward holdout (VIIRS-only predictor)",
+  "metric": "unique_cells",
+  "overlap_days": 4327,
+  "partial_final_year_excluded": 2026,
+  "loyo": {
+    "folds": 14,
+    "r2_median": 0.5862,
+    "r2_min": 0.3142,
+    "r2_max": 0.6456,
+    "mae_median": 39.77,
+    "per_year": [
+      {
+        "year": 2012,
+        "days": 294,
+        "r2": 0.6177,
+        "mae": 42.0
+      },
+      {
+        "year": 2013,
+        "days": 289,
+        "r2": 0.5207,
+        "mae": 42.32
+      },
+      {
+        "year": 2014,
+        "days": 307,
+        "r2": 0.6314,
+        "mae": 39.68
+      },
+      {
+        "year": 2015,
+        "days": 286,
+        "r2": 0.4661,
+        "mae": 43.36
+      },
+      {
+        "year": 2016,
+        "days": 291,
+        "r2": 0.5934,
+        "mae": 55.08
+      },
+      {
+        "year": 2017,
+        "days": 315,
+        "r2": 0.4538,
+        "mae": 34.64
+      },
+      {
+        "year": 2018,
+        "days": 301,
+        "r2": 0.5878,
+        "mae": 41.6
+      },
+      {
+        "year": 2019,
+        "days": 304,
+        "r2": 0.61,
+        "mae": 33.84
+      },
+      {
+        "year": 2020,
+        "days": 310,
+        "r2": 0.6132,
+        "mae": 39.85
+      },
+      {
+        "year": 2021,
+        "days": 319,
+        "r2": 0.6456,
+        "mae": 44.26
+      },
+      {
+        "year": 2022,
+        "days": 300,
+        "r2": 0.5847,
+        "mae": 35.32
+      },
+      {
+        "year": 2023,
+        "days": 299,
+        "r2": 0.4974,
+        "mae": 31.96
+      },
+      {
+        "year": 2024,
+        "days": 295,
+        "r2": 0.573,
+        "mae": 26.37
+      },
+      {
+        "year": 2025,
+        "days": 282,
+        "r2": 0.3142,
+        "mae": 28.05
+      }
+    ]
+  },
+  "forward": {
+    "train_years": "2012-2020",
+    "test_years": "2021-2025",
+    "days": 1495,
+    "r2": 0.5987,
+    "mae": 33.76
+  }
+}
